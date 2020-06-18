@@ -1,0 +1,17 @@
+site_name: Scipy 2020 Poster on Securing Your Collaborative Jupyter Notebooks in the Cloud using Container and Load Balancing Services
+
+theme:
+    name: mkdocs
+    custom_dir: ../../custom_theme
+
+# From https://github.com/mkdocs/mkdocs/issues/253 for math capability
+markdown_extensions:
+  - mdx_math:
+       enable_dollar_delimiter: True #for use of inline $..$
+  - fenced_code
+  - codehilite
+  - footnotes
+
+# Required to load the MathJax javascript for the mdx_math.py
+extra_javascript: ['https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML']
+
