@@ -5,7 +5,7 @@ site_name: Scipy 2020 Poster on Quasi-orthonormal Encoding for Machine Learning 
 
 theme:
     name: mkdocs
-    custom_dir: ../../custom_theme
+    custom_dir: ../../poster_theme
         
 markdown_extensions:
   - mdx_math:
