@@ -6,15 +6,15 @@ The detailed examples expressed here use `tensorflow` to implement a classificat
 
 Source code for the metafunctions for `qsoftmax` can be found here:
 
-  - [Numpy](notebooks/helpers/np_softmax.py)
-  - [Tensorflow](notebooks/helpers/tf_softmax.py)
-  - [Pytorch](notebooks/helpers/pt_softmax.py)
+  - [Numpy](https://github.com/WestHealth/scipy2020/blob/master/quasiorthonormal/notebooks/helpers/np_qsoftmax.py)
+  - [Tensorflow](https://github.com/WestHealth/scipy2020/blob/master/quasiorthonormal/notebooks/helpers/tf_softmax.py)
+  - [Pytorch](https://github.com/WestHealth/scipy2020/blob/master/quasiorthonormal/notebooks/helpers/pt_softmax.py)
 
 ## Validation Experiments
 
 The basic experiment uses the basic MNIST classification handwriting dataset and classifies handwritten digits. This dataset is available as part of `keras`. 
 
-The [notebook](notebooks/validation.ipynb) performs the basic classification almost identically to the example given by the `keras` quick start tutorial.
+The [notebook](https://github.com/WestHealth/scipy2020/blob/master/quasiorthonormal/notebooks/reference.ipynb) performs the basic classification almost identically to the example given by the `keras` quick start tutorial.
 
 Additionally, we test to verify that if the standard orthogonal basis (e.g. ${(0,0,1), (0,1,0), (1,0,0)}$) is fed into the `qsoftmax` function as a lambda layer we get the same results as the standard model.
 
@@ -25,7 +25,7 @@ The results compare the accuracy of two quasiorthonormal encodings with one hot 
 |Number of Epochs|One Hot Encoding|7-Dimensional QO|4-Dimensional QO|
 |:---:|:---:|:---:|:---:|
 |10|97.53% (97.30%)|97.24% (96.94%)|95.65% (95.15%)|
-|20|[97.68% (98.02%)](notebooks/qo4.ipynb)|[97.49% (97.75%)](brokenlink)|[95.94% (96.15%)](broken link)|
+|20|[97.68% (98.02%)](https://github.com/WestHealth/scipy2020/blob/master/quasiorthonormal/notebooks/reference.ipynb)|[97.49% (97.75%)](https://github.com/WestHealth/scipy2020/blob/master/quasiorthonormal/notebooks/qo7.ipynb)|[95.94% (96.15%)](https://github.com/WestHealth/scipy2020/blob/master/quasiorthonormal/notebooks/qo4.ipynb)|
 
 ## Experiment with Spherical Codes
 
@@ -34,10 +34,10 @@ The results compare the accuracy of two spherical encodings with one hot encodin
 |Number of Epochs|One Hot Encoding|5-Dimensional SC|3-Dimensional SC|
 |:---:|:---:|:---:|:---:|
 |10|97.53% (97.30%)|96.51% (96.26%)|95.37% (94.83%)|
-|20|[97.68% (98.02%)](broken link)|[96.82% (97.11%)](broken link)|[95.74% (95.83%)](broken link)|
+|20|[97.68% (98.02%)](https://github.com/WestHealth/scipy2020/blob/master/quasiorthonormal/notebooks/reference.ipynb)|[96.82% (97.11%)](https://github.com/WestHealth/scipy2020/blob/master/quasiorthonormal/notebooks/sp5.ipynb)|[95.74% (95.83%)](https://github.com/WestHealth/scipy2020/blob/master/quasiorthonormal/notebooks/sp3.ipynb)|
 
 ## Just for fun
 
-We concocted some experiments with other coding. For instance, how bad is ordinal coding?
+We concocted some experiments with other coding. For instance, how bad is ordinal coding? See [here](https://github.com/WestHealth/scipy2020/tree/master/quasiorthonormal/notebooks/for_fun)
 
 Find out [here](ordinal.ipynb)

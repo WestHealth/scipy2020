@@ -10,8 +10,6 @@ Watch the [short introductory video](https://videos.whidsc.net/SciPy2020/qo_post
 
 For more detailed explanation, please refer to the companion paper in the Scipy 2020 Proceedings.
 
-For an overview watch this introductory [video](broken link)
-
 <div class="row">
   <div class="col-md-4" align="center">
     <a href="introduction">
