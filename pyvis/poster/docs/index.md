@@ -19,11 +19,11 @@ This poster will be an interactive demonstration of a Python visualization libra
 ##
 ## Resources
 
-   - Proceedings Paper
-   - PyVis Documentation
-   - PyVis Repository
-   - PyVis on PyPi
-   - VisJs Documentation
+   - [Proceedings Paper](http://conference.scipy.org/proceedings/scipy2020/giancarlo_perrone.html)
+   - [PyVis Documentation](https://pyvis.readthedocs.io/en/latest/index.html)
+   - [PyVis Repository](https://github.com/WestHealth/pyvis)
+   - [PyVis on PyPi](https://pypi.org/project/pyvis/)
+   - [VisJs Documentation](https://visjs.github.io/vis-network/docs/network/)
    - [Code Snippets](https://github.com/WestHealth/scipy2020/tree/master/pyvis/code)
    
 ## [About Us](about_us.md)
