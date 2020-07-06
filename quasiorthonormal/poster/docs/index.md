@@ -8,6 +8,8 @@ no_toc: True
 
 Watch the [short introductory video](https://videos.whidsc.net/SciPy2020/qo_poster.mp4).
 
+[Full length proceedings paper](http://conference.scipy.org/proceedings/scipy2020/75_lu.html)
+
 For more detailed explanation, please refer to the companion paper in the Scipy 2020 Proceedings.
 
 <div class="row">
