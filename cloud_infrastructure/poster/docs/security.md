@@ -28,7 +28,7 @@ Be sure all storage devices are encrypted
   * Direct outbound traffic to a proxy
   * Block access to AWS's metadata ip addresses
 
-Example IP Tables can be found [here](broken_link). Sample of how to set the proxy environemnt is given [here](broken_link).
+Example IP Tables can be found [here](https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code/iptables). Sample of how to set the proxy environemnt is given [here](https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code/docker_proxy).
 
 
 ## Auditing

@@ -9,7 +9,7 @@ slim: True
 Our implementation of RStudio Server on the same cloud platform is
 non-invasive to the code base, but more complicated architecturally.
 
-The container is made up of three components, a proxy, RStudio server, and a custom app. A dockerfile is available [here](broken link)
+The container is made up of three components, a proxy, RStudio server, and a custom app. A dockerfile is available [here](https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code/rstudio/Dockerfile)
 
 #### The proxy
 
@@ -19,7 +19,7 @@ The container is made up of three components, a proxy, RStudio server, and a cus
   
 #### Custom App
 
-  * Source code is available [here](broken link)
+  * Source code is available [here](https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code/rstudio/front_door.py)
   * Fields `/ping` request for the internal health check
   * Captures the `auth-sign-in` URL and authenticates and verifies user identity
   * Sets authentication cookie for RStudio server

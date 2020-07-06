@@ -29,6 +29,6 @@ slim: True
    * Is responsible for confirming the user's identity through ALB authentication
    * Can self cull inactive containers (e.g., Jupyter)
 
-Modification to Jupyter's startup script for notebook and labs can be found [here](broken_link). Cloudformation templates managing the [hub](broken) and [applications](broken) are also provided.
+Modification to Jupyter's startup script for notebook and labs can be found [here](https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code/jupyter). Cloudformation templates managing the [hub](https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code/hub/hub.yaml) and [applications](https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code/hub/notebook.yaml) are also provided.
 
 

@@ -14,7 +14,7 @@ a headless VNC client, a VNC server and the end application running on the under
    * headless VNC client servers as a web to vnc proxy.
    * responsible for authenticating HTTPS and websocket connection
    * connects to VNC server through a port that is not exposed outside the container
-   * authentication added to [websockify.py](broken link)
+   * authentication added to [websockifyproxy.py](https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code/novnc/websockifyproxy.py)
 
 #### VNC
    * allows access from noVNC client to any underlying operation
