@@ -13,7 +13,7 @@ Securing the environment so that only authorized users have access to their own 
   * IDP
       -  authenticates user
   * ALB
-      - authenticates user via IDP over [OIDC](OpenId Connect)
+      - authenticates user via IDP over [OIDC](https://aws.amazon.com/blogs/aws/built-in-authentication-in-alb/)
       - provides JWT token to application via the `x-amzn-oidc-data` header
       - JWT token provides the user identity
   * Application
@@ -37,7 +37,7 @@ application, you should provide an unauthenticated URL for the ALB's
 health check and be equipped to configure the base URL. Authentication
 can be easily plugged into most web server frameworks.
 
-A `@login_required` decorator is provided in the code [here]()
+A `@login_required` decorator is provided in the code [here](https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code/bespoke)
 
 
 ## Apache Superset
