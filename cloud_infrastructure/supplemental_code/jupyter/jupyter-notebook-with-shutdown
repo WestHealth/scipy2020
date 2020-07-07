@@ -1,0 +1,20 @@
+#!/opt/conda/bin/python3
+import sys
+import boto3
+import time
+import re
+import sys
+
+from notebook.notebookapp import main
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
+    region_name= sys.argv.pop(1)
+    cluster_name = sys.argv.pop(1)
+    service_name = sys.argv.pop(1)
+    print (sys.argv)
+    main()
+    session = boto3.Session()
+    ecs = session.client("ecs", region_name)
+    ecs.update_service(cluster=cluster_name, service=service_name, desiredCount=0)
+    # Sleep for 2 minutes give service time to update 
+    time.sleep(120)
