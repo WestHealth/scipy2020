@@ -1,0 +1,309 @@
+Parameters:
+  ListenerArn:
+    Description: ListenerArn
+    Type: String
+  Cluster:
+    Description: Cluster Name
+    Type: String
+  BoundaryPermissionArn:
+    Description: Arn Boundary Permission
+    Type: String
+  FQDN:
+    Description: FQDN of the platform
+    Type: String
+  NotebookTargetGroupName:
+    Description: Target Group Name
+  NotebookRoleName:
+    Description: Notebook Role Name
+    Type: String
+  VPC:
+    Description: The VPC
+    Type: AWS::EC2::VPC::Id
+  HubURL:
+    Description: Root URL for Hub
+    Type: String
+  NotebookURL:
+    Description: Notebook Root URL
+    Type: String
+  ImageDomain:
+    Description: Domain for Image Server
+    Type: String
+  NotebookImage:
+    Description: Notebook Image
+    Type: String
+  DeploymentPrefix:
+    Description: Prefix for this Particular Deployment
+    Type: String
+  ContainerPort:
+    Description: Listening Port of Container
+    Type: Number
+  ResourcePrefix:
+    Description: Prefix for related Resources like S3 or Secrets
+    Type: String
+  NotebookServiceName:
+    Description: Name of the Notebook Service
+    Type: String
+  NotebookTaskDefinitionName:
+    Description: Name of the Notebook's Task Definition
+    Type: String
+  ListenerPriority:
+    Description: Listener Rule Priority for notebook
+    Type: Number
+  UserID:
+    Description: Unique User ID for the user
+    Type: String
+  UsersRoot:
+    Description: Path of Root of Users on the node
+    Type: String
+    Default: /media/home/users
+  UserHome:
+    Description: User Local Home Directory Path
+    Type: String
+    Default: /home/jovyan
+  OpenIDAuthEndpoint:
+    Description: Open ID Auth Endpoint should match the one provided by your IDP
+    Type: String
+  OpenIDIssuer:
+    Description: Open ID Issuer should match the one provided by your IDP
+    Type: String
+  AuthSessionCookieName:
+    Description: Name of the authentication cookie name for the session
+    Type: String
+  OpenIDTokenEndpoint:
+    Description: Open ID Token Endpoint should match the one provided by your IDP
+    Type: String
+  OpenIDUserInfoEndpoint:
+    Description: Open ID Info Endpoint should match the one provided by your IDP
+    Type: String
+  SessionTimeout:
+    Description: AWS Session Timeout
+    Type: Number
+Resources:
+  NotebookTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: 
+        !Join
+        - ''
+        - - !Ref NotebookURL
+          - !Ref UserID
+      HealthCheckPort: traffic-port
+      HealthCheckProtocol: HTTPS
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      Matcher:
+        HttpCode: 302,200
+      Name: !Ref NotebookTargetGroupName
+      Port: 32000
+      Protocol: HTTPS
+      TargetType: instance
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref VPC
+  NotebookRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ecs.amazonaws.com
+            - ecs-tasks.amazonaws.com
+          Sid: ''
+        Version: '2012-10-17'
+      Path: /
+      PermissionsBoundary: !Ref BoundaryPermissionArn
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - secretsmanager:GetSecretValue
+            - secretsmanager:DescribeSecret
+            Effect: Allow
+            Resource:
+            - !Join
+              - ''
+              - - 'arn:aws:secretsmanager:'
+                - !Ref AWS::Region
+                - ':'
+                - !Ref AWS::AccountId
+                - ':secret:'
+                - !Ref ResourcePrefix
+                - '-users-'
+                - !Ref UserID
+                - '-*'
+            Sid: Secrets
+          - Action:
+            - s3:ListBucket
+            Condition:
+              StringLike:
+                s3:prefix:
+                - !Join
+                  - '/'
+                  - - !Ref UserID
+                    - '*'
+            Effect: Allow
+            Resource:
+              !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref ResourcePrefix
+                - '-users-home'
+            Sid: S3List
+          - Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:DeleteObject
+            Effect: Allow
+            Resource:
+              !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref ResourcePrefix
+                - '-users-home/'
+                - !Ref UserID
+                - '/*'
+            Sid: S3
+          - Action:
+            - ecs:UpdateService
+            Effect: Allow
+            Resource:
+            - !Join
+              - ''
+              - - 'arn:aws:ecs:*:'
+                - !Ref AWS::AccountId
+                - ':service/'
+                - !Ref Cluster
+                - '/'
+                - !Ref NotebookServiceName
+
+            Sid: ECSService
+          - Action:
+            - secretsmanager:GetRandomPassword
+            - elasticloadbalancing:DescribeTargetGroups
+            - elasticloadbalancing:DescribeTargetHealth
+            - elasticloadbalancing:RegisterTargets
+            - elasticloadbalancing:DeregisterTargets
+            Effect: Allow
+            Resource: '*'
+            Sid: SecretsRandom
+          Version: '2012-10-17'
+        PolicyName: user-role
+      RoleName: !Ref NotebookRoleName
+    Type: AWS::IAM::Role
+  NotebookListener:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+      - AuthenticateOidcConfig:
+          AuthorizationEndpoint: !Ref OpenIDAuthEndpoint
+          ClientId: !Ref OpenIDClientID
+          ClientSecret: !Ref OpenIDClientSecret
+          Issuer: !Ref OpenIDIssuer
+          OnUnauthenticatedRequest: authenticate
+          Scope: openid
+          SessionCookieName: !Ref AuthSessionCookieName
+          SessionTimeout: !Ref SessionTimeout
+          TokenEndpoint: !Ref OpenIDTokenEndpoint
+          UserInfoEndpoint: !Ref OpenIDUserInfoEndpoint
+        Order: 1
+        Type: authenticate-oidc
+      - Order: 2
+        TargetGroupArn: !Ref NotebookTargetGroup
+        Type: forward
+      Conditions:
+      - Field: host-header
+        Values:
+        - !Ref FQDN
+      - Field: path-pattern
+        Values:
+        - !Join
+          - ''
+          - - !Ref NotebookURL
+            - !Ref UserID
+            - '/*'
+      ListenerArn: !Ref ListenerArn
+      Priority: !Ref ListenerPriority
+
+  NotebookTaskDefinition:
+    Properties:
+      ContainerDefinitions:
+      - Command:
+        - configure_user
+        - !Ref NotebookURL
+        Environment:
+        - Name: aws_region
+          Value: !Ref AWS::Region
+        - Name: aws_cluster
+          Value: !Ref Cluster
+        - Name: aws_service
+          Value: !Ref NotebookServiceName
+        - Name: resource_prefix
+          Value: !Ref ResourcePrefix
+        - Name: logout_url
+          Value:
+            !Join
+            - ''
+            - - 'https://'
+              - !Ref FQDN
+              - !Ref HubURL
+        Essential: true
+        Image:
+          !Join
+          - '/'
+          - - !Ref ImageDomain
+            - !Ref NotebookImage
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: /ecs/notebooks
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: !Ref NotebookServiceName
+        MemoryReservation: 128
+        MountPoints:
+        - ContainerPath: !Ref UserHome
+          SourceVolume: permanent
+          # Insert more Here
+        Name: !Ref NotebookImage
+        PortMappings:
+        - ContainerPort: !Ref ContainerPort
+          HostPort: 0
+          Protocol: tcp
+      Family: !Ref NotebookTaskDefinitionName 
+      PlacementConstraints: []
+      RequiresCompatibilities:
+      - EC2
+      TaskRoleArn: !GetAtt NotebookRole.Arn
+      Volumes:
+      - Host:
+          SourcePath:
+            !Join
+            - '/'
+            - - !Ref UsersRoot
+              - !Ref UserID
+        Name: permanent
+        # Insert more Here
+    Type: AWS::ECS::TaskDefinition
+  NotebookService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref Cluster
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 1
+      LaunchType: EC2
+      LoadBalancers:
+      - ContainerName: !Ref NotebookImage
+        ContainerPort: !Ref ContainerPort
+        TargetGroupArn: !Ref NotebookTargetGroup
+      PlacementStrategies:
+      - Field: attribute:ecs.availability-zone
+        Type: spread
+      - Field: instanceId
+        Type: spread
+      SchedulingStrategy: REPLICA
+      ServiceName: !Ref NotebookServiceName
+      TaskDefinition: !Ref NotebookTaskDefinition

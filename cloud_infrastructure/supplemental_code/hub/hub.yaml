@@ -1,0 +1,224 @@
+Parameters:
+  ListenerArn:
+    Description: ARN of the ALB Listener
+    Type: String
+  Cluster:
+    Description: Cluster Name
+    Type: String
+  FQDN:
+    Description: FQDN of the platform
+    Type: String
+  TargetGroupName:
+    Description: Target Group Name
+    Type: String
+  VPC:
+    Description: The VPC where this is installed
+    Type: AWS::EC2::VPC::Id
+  HubURL:
+    Description: Hub Root URL #Don't include trailing '/'
+    Type: String
+    Default: /hub
+  HubBoundaryPolicy:
+    Description: Suffix for Hub Boundary Policy
+    Type: String
+    Default: 'ecs-hub-boundary-policy'
+  HubImage:
+    Description: Hub Image
+    Type: String
+    Default: whilabs-hub
+  DeploymentPrefix:
+    Description: Prefix for this Particular Deployment
+    Type: String
+    Default: whilabs-dev
+  ResourcePrefix:
+    Description: Prefix for related Resources like S3 or Secrets
+    Type: String
+    Default: whilabs-dev
+  HubServiceName:
+    Description: Name of the Hub Service
+    Type: String
+    Default: Hub
+  HubTaskDefinitionName:
+    Description: Name of the Hub's Task Definition
+    Type: String
+  Priority1:
+    Description: Listener Rule Priority for /login MUST HAVE THE LOWEST NUMBER of the four
+    Type: Number
+  Priority2:
+    Description: Rule Priority
+    Type: Number
+  OpenIDAuthEndpoint:
+    Description: Open ID Auth Endpoint should match the one provided by your IDP
+    Type: String
+  OpenIDIssuer:
+    Description: Open ID Issuer should match the one provided by your IDP
+    Type: String
+  AuthSessionCookieName:
+    Description: Name of the authentication cookie name for the session
+    Type: String
+  OpenIDTokenEndpoint:
+    Description: Open ID Token Endpoint should match the one provided by your IDP
+    Type: String
+  OpenIDUserInfoEndpoint:
+    Description: Open ID Info Endpoint should match the one provided by your IDP
+    Type: String
+  HubRole:
+    Description: Name for the hub role
+    Type: String
+  ImageDomain:
+    Description: Domain for Image Server
+    Type: String
+  SessionTimeout:
+    Description: AWS Session Timeout
+    Type: Number
+Resources:
+  HubLoginListenerRule:
+    Properties:
+      Actions:
+      - AuthenticateOidcConfig:
+          AuthorizationEndpoint: !Ref OpenIDAuthEndpoint
+          Issuer: !Ref OpenIDIssuer
+          OnUnauthenticatedRequest: authenticate
+          Scope: openid
+          SessionCookieName: !Ref AuthSessionCookieName
+          SessionTimeout: !Ref SessionTimeout
+          TokenEndpoint: !Ref OpenIDTokenEndpoint
+          UserInfoEndpoint: !Ref OpenIDUserInfoEndpoint
+        Order: 1
+        Type: authenticate-oidc
+      - Order: 2
+        TargetGroupArn: !Ref HubTargetGroup
+        Type: forward
+      Conditions:
+      - Field: host-header
+        Values:
+        - !Ref FQDN
+      - Field: path-pattern
+        Values:
+        - !Join
+          - '/'
+          - - !Ref HubURL
+            - 'login'
+      ListenerArn: !Ref ListenerArn
+      Priority: !Ref Priority1
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+  HubAppListenerRule:
+    Properties:
+      Actions:
+      - AuthenticateOidcConfig:
+          AuthorizationEndpoint: !Ref OpenIDAuthEndpoint
+          Issuer: !Ref OpenIDIssuer
+          OnUnauthenticatedRequest: allow
+          Scope: openid
+          SessionCookieName: !Ref AuthSessionCookieName
+          SessionTimeout: !Ref SessionTimeout
+          TokenEndpoint: !Ref OpenIDTokenEndpoint
+          UserInfoEndpoint: !Ref OpenIDUserInfoEndpoint
+        Order: 1
+        Type: authenticate-oidc
+      - Order: 2
+        TargetGroupArn: !Ref HubTargetGroup
+        Type: forward
+      Conditions:
+      - Field: host-header
+        Values:
+        - !Ref FQDN
+      - Field: path-pattern
+        Values:
+        - !Ref HubURL
+        - !Join
+          - ''
+          - - !Ref HubURL
+            - '/'
+        - !Join
+          - ''
+          - - !Ref HubURL
+            - '/*'
+        - /auth-sign-in
+      ListenerArn: !Ref ListenerArn
+      Priority: !Ref Priority2
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+  HubTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref TargetGroupName
+      Port: 32000
+      Protocol: HTTPS
+      TargetType: 'instance'
+      VpcId: !Ref VPC
+  HubTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      -
+          Environment:
+          - Name: https_proxy
+            Value: http://172.17.0.1:8888/
+          - Name: http_proxy
+            Value: http://172.17.0.1:8888/
+          - Name: no_proxy
+            Value: localhost,127.0.0.1,169.254.169.254,169.254.170.2
+          Essential: true
+          Image:
+            !Join
+            - '/'
+            - - !Ref ImageDomain
+              - !Ref HubImage
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: 
+                !Join
+                - '/'
+                - - /ecs
+                  - !Ref HubTaskDefinitionName
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+          MemoryReservation: 128
+          Name: !Ref HubImage
+          PortMappings:
+          - ContainerPort: 5000
+            HostPort: 0
+            Protocol: tcp
+      Family: !Ref HubTaskDefinitionName
+      PlacementConstraints: []
+      RequiresCompatibilities:
+      - EC2
+      TaskRoleArn:
+        !Join
+        - ''
+        - - 'arn:aws:iam::'
+          - !Ref AWS::AccountId
+          - ':role/'
+          - !Ref HubRole
+  HubService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref Cluster
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 1
+      LaunchType: EC2
+      LoadBalancers:
+      - ContainerName: !Ref HubImage
+        ContainerPort: 5000
+        TargetGroupArn: !Ref HubTargetGroup
+      PlacementStrategies:
+      - Field: attribute:ecs.availability-zone
+        Type: spread
+      - Field: instanceId
+        Type: spread
+      SchedulingStrategy: REPLICA
+      ServiceName: !Ref HubServiceName
+      TaskDefinition: !Ref HubTaskDefinition
+  HubLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        !Join
+        - '/'
+        - - /ecs
+          - !Ref HubTaskDefinitionName
+      RetentionInDays: 7
+      
