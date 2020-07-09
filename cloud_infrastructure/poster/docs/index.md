@@ -47,4 +47,4 @@ For more detailed explanation, please refer to the companion paper in the Scipy 
   </div>
 </div>
 
-<p style="color:red;">PLEASE NOTE: Much of the source code is not yet deployed so many links are broken, but should be fixed within a day. You can also check all the code snippets at <a href="https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code">https://github.com/WestHealth/scipy2020/tree/master/cloud_infrastructure/supplemental_code) so please monitor this for updates</a></p>
+<p style="color:red;">PLEASE NOTE: The link to the rstudio code has not been deployed to github so the link is broken, but all other links work. It shall be fixed soon.</p>
