@@ -46,5 +46,3 @@ For more detailed explanation, please refer to the companion paper in the Scipy 
       </a>
   </div>
 </div>
-
-<p style="color:red;">PLEASE NOTE: The link to the rstudio code has not been deployed to github so the link is broken, but all other links work. It shall be fixed soon.</p>
